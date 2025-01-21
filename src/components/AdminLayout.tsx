@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { AppSidebar } from "@/components/Sidebar"
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,9 @@ interface AdminLayoutProps {
   children: React.ReactNode
 }
 
-const getPageTitle = (pathname: string) => {
+const getPageTitle = (pathname: string | null) => {
+  if (!pathname) return "Admin Dashboard";
+  
   switch (pathname) {
     case "/admin/dashboard":
       return "Dashboard"
@@ -44,10 +47,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
             {showActionButtons && (
               <div className="flex items-center gap-2">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create New Assignment
-                </Button>
+                <Link href="/admin/project-assignments/new">
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New Assignment
+                  </Button>
+                </Link>
                 <BulkUploadModal />
               </div>
             )}

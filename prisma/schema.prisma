@@ -17,6 +17,7 @@ model Intern {
   id        String     @id @default(cuid())
   email     String     @unique
   name      String
+  type      InternType @default(FULLSTACK)
   status    InternStatus @default(ACTIVE)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -67,4 +68,11 @@ enum AssignmentStatus {
   ACTIVE
   COMPLETED
   CANCELLED
+}
+
+enum InternType {
+  FULLSTACK
+  BUSINESS_ANALYST
+  CYBER_SECURITY
+  DATA_ANALYST
 }

@@ -21,7 +21,6 @@ export function BulkUploadModal() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadComplete, setUploadComplete] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentFile, setCurrentFile] = useState<File | null>(null)
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
 

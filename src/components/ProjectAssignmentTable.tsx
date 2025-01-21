@@ -1,39 +1,56 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"
 
 interface Assignment {
   id: string
-  user: string
-  project: string
-  status: "ASSIGNED" | "REJECTED"
+  intern: {
+    name: string
+  }
+  project: {
+    name: string
+  }
+  status: "ACTIVE" | "COMPLETED" | "CANCELLED"
   startDate: string
-  endDate: string
+  endDate: string | null
 }
 
-// Mock data - in real app this would come from API
-const mockAssignments: Assignment[] = Array.from({ length: 150 }, (_, i) => ({
-  id: `${i + 1}`,
-  user: `User ${i + 1}`,
-  project: i % 2 === 0 ? "AI Chatbot to supplement LMS" : "Cancer Data Analytics (Python)",
-  status: i % 3 === 0 ? "REJECTED" : "ASSIGNED",
-  startDate: i % 3 === 0 ? "Not set" : "Nov 4, 2024",
-  endDate: i % 3 === 0 ? "Not set" : "Dec 20, 2024",
-}))
-
 export function ProjectAssignmentTable() {
+  const [assignments, setAssignments] = useState<Assignment[]>([])
+  const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const totalRecords = mockAssignments.length
+  const [totalRecords, setTotalRecords] = useState(0)
+
+  const fetchAssignments = async (page: number, size: number) => {
+    try {
+      setLoading(true)
+      const response = await fetch(
+        `/api/assignments?page=${page}&pageSize=${size}`
+      )
+      if (!response.ok) throw new Error('Failed to fetch assignments')
+      const data = await response.json()
+      setAssignments(data.assignments)
+      setTotalRecords(data.totalRecords)
+    } catch (error) {
+      console.error('Error fetching assignments:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAssignments(currentPage, pageSize)
+  }, [currentPage, pageSize])
 
   // Calculate pagination values
   const totalPages = Math.ceil(totalRecords / pageSize)
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = Math.min(startIndex + pageSize, totalRecords)
-  const currentRecords = mockAssignments.slice(startIndex, endIndex)
+  const currentRecords = assignments.slice(startIndex, endIndex)
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
@@ -43,6 +60,8 @@ export function ProjectAssignmentTable() {
     setPageSize(Number(value))
     setCurrentPage(1) // Reset to first page when changing page size
   }
+
+  if (loading) return <div>Loading...</div>
 
   return (
     <div className="space-y-4">
@@ -76,7 +95,7 @@ export function ProjectAssignmentTable() {
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-4 font-medium text-gray-500">User</th>
+                <th className="text-left p-4 font-medium text-gray-500">Intern</th>
                 <th className="text-left p-4 font-medium text-gray-500">Project</th>
                 <th className="text-left p-4 font-medium text-gray-500">Status</th>
                 <th className="text-left p-4 font-medium text-gray-500">Start Date</th>
@@ -87,18 +106,25 @@ export function ProjectAssignmentTable() {
             <tbody>
               {currentRecords.map((assignment) => (
                 <tr key={assignment.id} className="border-b last:border-0">
-                  <td className="p-4">{assignment.user}</td>
-                  <td className="p-4">{assignment.project}</td>
+                  <td className="p-4">{assignment.intern.name}</td>
+                  <td className="p-4">{assignment.project.name}</td>
                   <td className="p-4">
                     <span
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium
-                      ${assignment.status === "ASSIGNED" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                        assignment.status === "ACTIVE" 
+                          ? "bg-green-100 text-green-700" 
+                          : assignment.status === "COMPLETED"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
                     >
                       {assignment.status}
                     </span>
                   </td>
-                  <td className="p-4">{assignment.startDate}</td>
-                  <td className="p-4">{assignment.endDate}</td>
+                  <td className="p-4">{new Date(assignment.startDate).toLocaleDateString()}</td>
+                  <td className="p-4">
+                    {assignment.endDate ? new Date(assignment.endDate).toLocaleDateString() : 'Not set'}
+                  </td>
                   <td className="p-4">
                     <Button variant="outline" size="sm">
                       Edit
