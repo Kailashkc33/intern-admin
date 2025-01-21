@@ -3,10 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { AssignmentStatus } from "@prisma/client"
 
 // Correctly define the context type for Next.js route handlers
-export function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return prisma.projectAssignment.findUnique({
     where: { id: params.id },
     include: {
@@ -37,10 +35,8 @@ export function GET(
   })
 }
 
-export function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return request.json()
     .then(body => {
       return prisma.projectAssignment.update({
@@ -78,10 +74,8 @@ export function PUT(
     })
 }
 
-export function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return prisma.projectAssignment.delete({
     where: { id: params.id },
   })
